@@ -23,6 +23,7 @@ interface CreatePostFormState {
 
 //TODO: revalidate the topic show page
 export async function createPost(
+  slug: string,
   formState: CreatePostFormState,
   formData: FormData
 ): Promise<CreatePostFormState> {
@@ -39,7 +40,55 @@ export async function createPost(
       errors: result.error.flatten().fieldErrors,
     };
   }
-  return {
-    errors: {},
-  };
+
+  const session = await auth();
+  if (!session || !session.user) {
+    return {
+      errors: {
+        _form: ["請登入會員"],
+      },
+    };
+  }
+
+  const topic = await db.topic.findFirst({
+    where: { slug },
+  });
+
+  if (!topic) {
+    return {
+      errors: {
+        _form: ["找不到問題"],
+      },
+    };
+  }
+
+  let post: Post;
+
+  try {
+    post = await db.post.create({
+      data: {
+        title: result.data.title,
+        content: result.data.content,
+        userId: session.user.id,
+        topicId: topic.id,
+      },
+    });
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      return {
+        errors: {
+          _form: [error.message],
+        },
+      };
+    } else {
+      return {
+        errors: {
+          _form: ["Failed to create post"],
+        },
+      };
+    }
+  }
+
+  revalidatePath(paths.topicShow(slug));
+  redirect(paths.PostShow(slug, post.id));
 }

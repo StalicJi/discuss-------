@@ -13,10 +13,17 @@ import {
 import * as actions from "@/actions";
 import FormButton from "../common/form-button";
 
-export default function PostCreateForm() {
-  const [formState, action] = useFormState(actions.createPost, {
-    errors: {},
-  });
+interface PostCreateFormProps {
+  slug: string;
+}
+
+export default function PostCreateForm({ slug }: PostCreateFormProps) {
+  const [formState, action] = useFormState(
+    actions.createPost.bind(null, slug),
+    {
+      errors: {},
+    }
+  );
 
   return (
     <Popover placement="left">
@@ -44,6 +51,12 @@ export default function PostCreateForm() {
               isInvalid={!!formState.errors.content}
               errorMessage={formState.errors.content?.join("， ")}
             />
+
+            {formState.errors._form ? (
+              <div className="p-2 bg-red-200 border border-red-400 rounded">
+                {formState.errors._form?.join("， ")}
+              </div>
+            ) : null}
 
             <FormButton color="secondary">發怖</FormButton>
           </div>

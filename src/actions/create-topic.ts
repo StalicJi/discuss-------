@@ -13,7 +13,7 @@ const createTopicSchema = z.object({
     .string()
     .min(3, { message: "最少需要3個字元" })
     .regex(/[a-z-]/, { message: "必須是英文字母小寫組成，且不能又空白格" }),
-  description: z.string().min(10, { message: "最少需要10ㄑ個字元" }),
+  description: z.string().min(10, { message: "最少需要10個字元" }),
 });
 
 interface CreateTopicFormState {
